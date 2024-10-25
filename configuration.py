@@ -37,6 +37,11 @@ class Stream:
             self.delta = get_delta(stride * ag_stride, bank_num)
         elif ag_direction == 'col':
             self.delta = get_delta(ag_stride, bank_num)
+        elif ag_direction == 'fft_stride_n' or ag_direction == 'fft_stride_1':
+            delta = [1] * 16
+            delta[0] = 0
+            delta[1] = 2
+            self.delta = delta
 
 
 class Bitstream:
@@ -77,5 +82,14 @@ class Bitstream:
             sag_stride_dir = stream.stride * sag_stride
         elif direction == 'col':
             sag_stride_dir = sag_stride
+        elif direction == 'fft_stride_n':
+            sag_stride = stream.ag_stride * (scalar_index // 2)
+
+            col_addr = stream.ag_stride * (scalar_index % 2)
+            row_addr = sag_stride * stream.stride
+            sag_stride_dir = col_addr + row_addr
+        elif direction == 'fft_stride_1':
+            sag_stride = 0
+            sag_stride_dir = scalar_index * stream.ag_stride
 
         self.sag_stride_group[sag_id] = sag_stride, sag_stride_dir

@@ -11,7 +11,7 @@ class Ag:
     def cal_ag_index(self):
         if self.direction == 'channel':
             self.ag_index = self.channel_idx
-        elif self.direction == 'row':
+        elif self.direction == 'row' or self.direction == 'fft_stride_n' or self.direction == 'fft_stride_1':
             self.ag_index = self.channel_idx * self.multi + self.row_idx
         elif self.direction == 'col':
             self.ag_index = self.channel_idx * self.multi * \
@@ -64,14 +64,10 @@ class Sag:
                               self.sag_delta) % self.bank_num
         self.spm_col_index_old = self.linear_addr % self.bank_num
 
+        print(self.spm_row_index, self.spm_col_index, self.linear_addr)
+
     def set_sag_delta(self, sag_delta):
         self.sag_delta = sag_delta
-
-    # def update(self):
-    #     self.cal_sag_index()
-    #     # get sag_delta
-    #     self.cal_linear_addr()
-    #     self.cal_spm_addr()
 
     def update_0(self):
         self.cal_sag_index()
@@ -130,8 +126,27 @@ class Ag2Sag:
 
 
 def inc_k(i, j, k):
-    k += 1
+    k += 4
+
+    if k >= 8:
+        j = 1
+
     return i, j, k
+
+
+class fft_stride_1_pe_in:
+    def __init__(self):
+        self.k = [0, 4, 0, 4]
+        self.j = [0, 0, 1, 1]
+        self.cycle = 0
+
+    def __call__(self, i, j, k):
+
+        result = 0, self.j[self.cycle], self.k[self.cycle]
+
+        self.cycle += 1
+
+        return result
 
 
 class Pe2Ag:
@@ -144,8 +159,8 @@ class Pe2Ag:
         self.k = 0
 
     def update(self):
-        self.ag.set_input(self.i, self.j, self.k)
         self.i, self.j, self.k = self.hook(self.i, self.j, self.k)
+        self.ag.set_input(self.i, self.j, self.k)
 
 
 class Sag2Lsu2Sag:

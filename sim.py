@@ -69,7 +69,7 @@ class GeneratorTest0:
             self.connection_group['ag2sag'].append(ag2sag)
 
         # connect pe to ag
-        pe2ag = Pe2Ag(ag)
+        pe2ag = Pe2Ag(ag, fft_stride_1_pe_in())
         self.connection_group['pe2ag'] = [pe2ag]
 
         # connect sag to spm
@@ -107,7 +107,7 @@ class GeneratorTest0:
 
 class Sim:
     def __init__(self):
-        stream = Stream(0, [0, 1, 2, 3], 4, 1024, 1, 2, 'col', 1)
+        stream = Stream(0, [0, 1, 2, 3], 4, 8, 1, 1, 'fft_stride_1', 0)
         bitstream = Bitstream([stream])
         generator = GeneratorTest0(bitstream)
 
@@ -133,12 +133,9 @@ def print_layout(coord_group):
 if __name__ == '__main__':
     sim = Sim()
 
-    for i in range(2):
+    for i in range(4):
         sim.run()
 
     trans, trans_old = sim.object.get_spm_trans()
 
-    for coord in trans:
-        print(coord)
-
-    print_layout(trans)
+    # print_layout(trans)
